@@ -81,4 +81,14 @@ class UserADDSerializer(serializers.ModelSerializer):
         model = User
         fields = ('uuid', 'username', 'pid', 'full_name', 'image', 'passport_number', 'passport_pinfl', 'branch', 'department', 'position', 'role', )
 
+class TaskGETSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Task
+        fields = ("uuid", "name", "point", "term", "created", )
+
+
+class TaskADDSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Task
+        fields = ("name", "point", "term", )
 

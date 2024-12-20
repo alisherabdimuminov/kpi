@@ -12,6 +12,10 @@ from .views import (
 
     etiquette_list,
     edit_etiquette,
+
+    tasks_list,
+    add_task,
+    delete_task,
 )
 
 
@@ -30,4 +34,8 @@ urlpatterns = [
 
     path("admin/etiquettes/", etiquette_list, name="etiquette_list"),
     path("admin/etiquettes/edit/", edit_etiquette, name="edit_etiquette"),
+
+    path("admin/tasks/", tasks_list, name="tasks_list"),
+    path("admin/tasks/add/", add_task, name="add_task"),
+    path("admin/tasks/delete/", delete_task, name="delete_task"),
 ]

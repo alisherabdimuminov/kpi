@@ -102,6 +102,19 @@ class User(AbstractUser):
         return self.username
 
 
+class Rate(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    point = models.IntegerField(default=0)
+
+    created = models.DateField()
+
+    def __str__(self):
+        return str(self.point)
+    
+    class Meta:
+        unique_together = [["user", "created"]]
+
+
 class Attendance(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     is_arrived = models.BooleanField(default=False)

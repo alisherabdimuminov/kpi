@@ -19,6 +19,8 @@ from .serializers import (
     EtiquetteGETSerializer,
     UserADDSerializer,
     UserGETSerializer,
+    TaskGETSerializer,
+    TaskADDSerializer,
 )
 
 
@@ -78,6 +80,7 @@ def login(request: HttpRequest):
             "data": None
         })
 
+
 # ===== ADD USER FOR ONLY ADMIN =====
 @decorators.api_view(http_method_names=["POST"])
 def add_user(request: HttpRequest):
@@ -104,6 +107,7 @@ def add_user(request: HttpRequest):
                 "errors": errors
             }
         })
+
 
 # ===== EDIT USER FOR ONLY ADMIN =====
 @decorators.api_view(http_method_names=["POST"])
@@ -151,6 +155,7 @@ def users_list(request: HttpRequest):
         "data": users.data
     })
 
+
 # ===== USER GET FOR ONLY ADMIN
 @decorators.api_view(http_method_names=["GET"])
 def get_user(request: HttpRequest, uuid: str):
@@ -161,6 +166,7 @@ def get_user(request: HttpRequest, uuid: str):
         "code": "200",
         "data": user.data
     })
+
 
 # ===== ATTENDANCE =====
 # ===== ATTENDANCE LIST FOR ONLY ADMIN =====
@@ -201,6 +207,7 @@ def attendance_list(request: HttpRequest):
         "code": "200",
         "data": attendances
     })
+
 
 # ===== ATTENDANCE EDIT FOR ONLY ADMIN =====
 @decorators.api_view(http_method_names=["POST"])
@@ -294,3 +301,51 @@ def edit_etiquette(request: HttpRequest):
     })
 
 
+# ===== TASK =====
+# ===== TASKS FOR ONYLY ADMINS =====
+@decorators.api_view(http_method_names=["GET"])
+def tasks_list(request: HttpRequest):
+    tasks_obj = Task.objects.all()
+    tasks = TaskGETSerializer(tasks_obj, many=True)
+    return Response({
+        "status": "success",
+        "code": "200",
+        "data": tasks.data
+    })
+
+
+# ===== ADD TASK FOR ONLY ADMINS =====
+@decorators.api_view(http_method_names=["POST"])
+def add_task(request: HttpRequest):
+    serializer = TaskADDSerializer(data=request.data)
+
+    if serializer.is_valid():
+        serializer.save()
+        return Response({
+            "status": "success",
+            "code": "200",
+            "data": None
+        })
+    else:
+        errors = serializer.error_messages
+        print(serializer.errors)
+        return Response({
+            "status": "error",
+            "code": "400",
+            "data": {
+                "errors": errors
+            }
+        })
+
+
+# ===== DELETE TASK FOR ONLY ADMINS =====
+@decorators.api_view(http_method_names=["POST"])
+def delete_task(request: HttpRequest):
+    task_uuid = request.data.get("uuid")
+    task = Task.objects.get(uuid=task_uuid)
+    task.delete()
+    return Response({
+        "status": "success",
+        "code": "200",
+        "data": None
+    })
