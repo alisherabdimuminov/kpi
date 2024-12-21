@@ -11,12 +11,14 @@ from .models import (
     Submit,
     Task,
     User,
+    Rate,
 )
 
 from .serializers import (
     ApplicationGETSerializer,
     AttendanceGETSerializer,
     EtiquetteGETSerializer,
+    SubmitGETSerializer,
     UserADDSerializer,
     UserGETSerializer,
     TaskGETSerializer,
@@ -318,7 +320,7 @@ def tasks_list(request: HttpRequest):
 @decorators.api_view(http_method_names=["POST"])
 def add_task(request: HttpRequest):
     serializer = TaskADDSerializer(data=request.data)
-
+    print(request.data)
     if serializer.is_valid():
         serializer.save()
         return Response({
@@ -347,5 +349,56 @@ def delete_task(request: HttpRequest):
     return Response({
         "status": "success",
         "code": "200",
+        "data": None
+    })
+
+
+# ===== TASKS FOR ONYLY EMPLOYEES =====
+@decorators.api_view(http_method_names=["GET"])
+def user_tasks_list(request: HttpRequest):
+    user = request.user
+    tasks_obj = Task.objects.filter(position=user.position)
+    tasks = TaskGETSerializer(tasks_obj, many=True)
+    return Response({
+        "status": "success",
+        "code": "200",
+        "data": tasks.data
+    })
+
+
+# ===== SUBMITS =====
+# ===== SUBMITS FOR ONLY ADMIN =====
+@decorators.api_view(http_method_names=["GET"])
+def submits_list(request: HttpRequest):
+    submits_obj = Submit.objects.all()
+    submits = SubmitGETSerializer(submits_obj, many=True)
+    return Response({
+        "status": "success",
+        "code": "200",
+        "data": submits.data
+    })
+
+# ===== CHANGE SUBMITS STATUS FOR ONLY ADMINS =====
+@decorators.api_view(http_method_names=["POST"])
+def change_submit_status(request: HttpRequest):
+    now = datetime.now()
+    submit_uuid = request.data.get("uuid")
+    status = request.data.get("status")
+    submit = Submit.objects.get(uuid=submit_uuid)
+    submit.status = status
+    submit.save()
+    if submit.status == "approved":
+        rate = Rate.objects.filter(created__month=now.month, created__year=now.year, user_id=submit.user.pk, )
+        if rate:
+            rate = rate.first()
+            rate.point = rate.point + submit.task.point
+            rate.save()
+        else:
+            rate = Rate.objects.create(user=submit.user, point=0, created=now)
+            rate.point = rate.point + submit.task.point
+            rate.save()
+    return Response({
+        "status": "success",
+        "code": "201",
         "data": None
     })

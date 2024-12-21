@@ -145,6 +145,7 @@ class Etiquette(models.Model):
 
 class Task(models.Model):
     uuid = models.CharField(max_length=100, default=uuid4, editable=False)
+    position = models.CharField(max_length=100)
     name = models.CharField(max_length=2000)
     point = models.IntegerField(default=20)
     term = models.CharField(max_length=100, choices=TERM)

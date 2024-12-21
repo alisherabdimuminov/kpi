@@ -13,6 +13,7 @@ from .models import (
 
 
 class ApplicationGETSerializer(serializers.ModelSerializer):
+    created = serializers.DateTimeField(format="%d-%m-%Y %H:%M:%S")
     class Meta:
         model = Application
         fields = ('uuid', 'number', 'file', 'status', 'created', 'updated', )
@@ -82,13 +83,23 @@ class UserADDSerializer(serializers.ModelSerializer):
         fields = ('uuid', 'username', 'pid', 'full_name', 'image', 'passport_number', 'passport_pinfl', 'branch', 'department', 'position', 'role', )
 
 class TaskGETSerializer(serializers.ModelSerializer):
+    created = serializers.DateTimeField(format="%d-%m-%Y %H:%M:%S")
     class Meta:
         model = Task
-        fields = ("uuid", "name", "point", "term", "created", )
+        fields = ("uuid", "name", "point", "term", "position", "created", )
 
 
 class TaskADDSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
-        fields = ("name", "point", "term", )
+        fields = ("name", "point", "term", "position", )
+
+
+class SubmitGETSerializer(serializers.ModelSerializer):
+    user = UserGETSerializer(User, many=False)
+    task = TaskGETSerializer(Task, many=False)
+    created = serializers.DateTimeField(format="%d-%m-%Y %H:%M:%S")
+    class Meta:
+        model = Submit
+        fields = ("uuid", "user", "task", "file", "status", "created")
 
