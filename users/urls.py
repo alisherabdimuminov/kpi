@@ -20,6 +20,10 @@ from .views import (
 
     submits_list,
     change_submit_status,
+    submit_task,
+
+    rates_list,
+    rate,
 )
 
 
@@ -46,4 +50,8 @@ urlpatterns = [
 
     path("admin/submits/", submits_list, name="submits_list"),
     path("admin/submits/change/", change_submit_status, name="change_submit_status"),
+    path("user/tasks/submit/", submit_task, name="submit_task"),
+
+    path("admin/rates/", rates_list, name="rates_list"),
+    path("user/rate/", rate, name="rate"),
 ]

@@ -6,6 +6,7 @@ from .models import (
     Application,
     Attendance,
     Etiquette,
+    Rate,
     Submit,
     Task,
     User,
@@ -82,6 +83,13 @@ class UserADDSerializer(serializers.ModelSerializer):
         model = User
         fields = ('uuid', 'username', 'pid', 'full_name', 'image', 'passport_number', 'passport_pinfl', 'branch', 'department', 'position', 'role', )
 
+
+class RateGETSerializer(serializers.ModelSerializer):
+    user = UserGETSerializer(User, many=False)
+    class Meta:
+        model = Rate
+        fields = ("user", "point", )
+
 class TaskGETSerializer(serializers.ModelSerializer):
     created = serializers.DateTimeField(format="%d-%m-%Y %H:%M:%S")
     class Meta:
@@ -103,3 +111,21 @@ class SubmitGETSerializer(serializers.ModelSerializer):
         model = Submit
         fields = ("uuid", "user", "task", "file", "status", "created")
 
+class TaskWSGETSerializer(serializers.ModelSerializer):
+    requies_context = True
+
+    created = serializers.DateTimeField(format="%d-%m-%Y %H:%M:%S")
+    status = serializers.SerializerMethodField("status_func")
+
+    def status_func(self, obj: Task):
+        request = self.context.get("request")
+        submit = Submit.objects.filter(user_id=request.user.pk, task_id=obj.pk)
+        if submit:
+            submit = submit.last()
+            return submit.status
+        else:
+            return "given"
+
+    class Meta:
+        model = Task
+        fields = ("uuid", "name", "point", "term", "position", "created", "status", )

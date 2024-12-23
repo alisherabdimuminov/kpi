@@ -19,10 +19,12 @@ from .serializers import (
     AttendanceGETSerializer,
     EtiquetteGETSerializer,
     SubmitGETSerializer,
+    TaskWSGETSerializer,
     UserADDSerializer,
     UserGETSerializer,
     TaskGETSerializer,
     TaskADDSerializer,
+    RateGETSerializer,
 )
 
 
@@ -358,7 +360,7 @@ def delete_task(request: HttpRequest):
 def user_tasks_list(request: HttpRequest):
     user = request.user
     tasks_obj = Task.objects.filter(position=user.position)
-    tasks = TaskGETSerializer(tasks_obj, many=True)
+    tasks = TaskWSGETSerializer(tasks_obj, many=True, context={ "request": request })
     return Response({
         "status": "success",
         "code": "200",
@@ -401,4 +403,61 @@ def change_submit_status(request: HttpRequest):
         "status": "success",
         "code": "201",
         "data": None
+    })
+
+
+@decorators.api_view(http_method_names=["POST"])
+def submit_task(request: HttpRequest):
+    task_uuid = request.data.get("uuid")
+    file = request.FILES.get("file")
+    user = request.user
+    task = Task.objects.get(uuid=task_uuid)
+    submit = Submit.objects.create(
+        user=user,
+        task=task,
+        file=file,
+        status="created",
+    )
+    return Response({
+        "status": "success",
+        "code": "200",
+        "data": None
+    })
+
+
+# ===== RATE =====
+# ===== RATES LIST FOR ONLY ADMINS =====
+@decorators.api_view(http_method_names=["GET"])
+def rates_list(request: HttpRequest):
+    now = datetime.now()
+    branch = request.GET.get("branch")
+    department = request.GET.get("department")
+    rates_obj = Rate.objects.all().filter(created__month=now.month, created__year=now.year).order_by("-point")
+    if branch:
+        rates_obj = rates_obj.filter(user__branch=branch).order_by("-point")
+    if department:
+        rates_obj = rates_obj.filter(user__department=department).order_by("-point")
+    rates = RateGETSerializer(rates_obj, many=True)
+    return Response({
+        "status": "success",
+        "code": "200",
+        "data": rates.data
+    })
+
+# ===== RATE FOR USER =====
+@decorators.api_view(http_method_names=["GET"])
+def rate(request: HttpRequest):
+    now = datetime.now()
+    user: User = request.user
+    rates_obj = Rate.objects.filter(user__branch=user.branch, user__department=user.department, created__month=now.month, created__year=now.year)
+    rate_obj = Rate.objects.filter(user_id=user.pk, created__month=now.month, created__year=now.year).first()
+    place = list(rates_obj.values_list("id", flat=True)).index(rate_obj.pk)
+    print(place)
+    return Response({
+        "status": "success",
+        "code": "200",
+        "data": {
+            "place": place,
+            "rate": rate_obj.point,
+        }
     })

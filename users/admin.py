@@ -9,6 +9,7 @@ from .models import (
     Submit,
     Task,
     User,
+    Rate,
 )
 
 
@@ -55,3 +56,8 @@ class UserModelAdmin(UserAdmin):
             "fields": ("branch", "department", "position", "passport_number", "passport_pinfl", )
         }),
     )
+
+
+@admin.register(Rate)
+class RateModelAdmin(admin.ModelAdmin):
+    list_display = ["user", "point", ]
